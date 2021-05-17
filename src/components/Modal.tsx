@@ -7,7 +7,11 @@ import {
   MODAL_LIGHTBOX_CLASSNAME,
   MODAL_CONTAINER_CLASSNAME,
   MODAL_HITBOX_CLASSNAME,
-  MODAL_CARD_CLASSNAME
+  MODAL_CARD_CLASSNAME,
+  MODAL_CARD_CONTAINER_CLASSNAME,
+  MODAL_CARD_HEADER_CLASSNAME,
+  MODAL_CARD_CLOSE_BUTTON_CLASSNAME,
+  MODAL_CARD_CLOSE_BUTTON_SVG_CLASSNAME
 } from "../constants";
 import { SimpleFunction, IProviderUserOptions, ThemeColors } from "../helpers";
 
@@ -25,6 +29,12 @@ interface ILightboxStyleProps {
   offset: number;
   opacity?: number;
 }
+
+const SHeader = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+`;
 
 const SLightbox = styled.div<ILightboxStyleProps>`
   transition: opacity 0.1s ease-in-out;
@@ -87,12 +97,20 @@ interface IModalCardStyleProps {
   maxWidth?: number;
 }
 
+const SModalCardContainer = styled.div<{show: boolean}>`
+  margin: 10px;
+  opacity: ${({ show }) => (show ? 1 : 0)};
+  visibility: ${({ show }) => (show ? "visible" : "hidden")};
+  pointer-events: ${({ show }) => (show ? "auto" : "none")};
+  z-index: 100;
+`;
+
 const SModalCard = styled.div<IModalCardStyleProps>`
   position: relative;
   width: 100%;
   background-color: ${({ themeColors }) => themeColors.background};
   border-radius: 12px;
-  margin: 10px;
+  margin: 0;
   padding: 0;
   opacity: ${({ show }) => (show ? 1 : 0)};
   visibility: ${({ show }) => (show ? "visible" : "hidden")};
@@ -182,25 +200,39 @@ export class Modal extends React.Component<IModalProps, IModalState> {
       >
         <SModalContainer className={MODAL_CONTAINER_CLASSNAME} show={show}>
           <SHitbox className={MODAL_HITBOX_CLASSNAME} onClick={onClose} />
-          <SModalCard
-            className={MODAL_CARD_CLASSNAME}
+          <SModalCardContainer
             show={show}
-            themeColors={themeColors}
-            maxWidth={userOptions.length < 3 ? 500 : 800}
-            ref={c => (this.mainModalCard = c)}
+            className={MODAL_CARD_CONTAINER_CLASSNAME} 
+            onClick={(e) => { e.stopPropagation(); }}
           >
-            {userOptions.map(provider =>
-              !!provider ? (
-                <Provider
-                  name={provider.name}
-                  logo={provider.logo}
-                  description={provider.description}
-                  themeColors={themeColors}
-                  onClick={provider.onClick}
-                />
-              ) : null
-            )}
-          </SModalCard>
+            <SHeader className={MODAL_CARD_HEADER_CLASSNAME}>
+              <span>Connect Wallet</span>
+              <a className={MODAL_CARD_CLOSE_BUTTON_CLASSNAME} onClick={onClose}>
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path className={MODAL_CARD_CLOSE_BUTTON_SVG_CLASSNAME} fill-rule="evenodd" clip-rule="evenodd" d="M15.8252 14.4111L22.5898 7.64648L24.004 9.0607L17.2395 15.8253L24.004 22.5898L22.5898 24.004L15.8252 17.2395L9.0607 24.004L7.64648 22.5898L14.411 15.8253L7.64649 9.06082L9.0607 7.6466L15.8252 14.4111Z" />
+                </svg>
+              </a>
+            </SHeader>
+            <SModalCard
+              className={MODAL_CARD_CLASSNAME}
+              show={show}
+              themeColors={themeColors}
+              maxWidth={userOptions.length < 3 ? 500 : 800}
+              ref={c => (this.mainModalCard = c)}
+            >
+              {userOptions.map(provider =>
+                !!provider ? (
+                  <Provider
+                    name={provider.name}
+                    logo={provider.logo}
+                    description={provider.description}
+                    themeColors={themeColors}
+                    onClick={provider.onClick}
+                  />
+                ) : null
+              )}
+            </SModalCard>
+          </SModalCardContainer>
         </SModalContainer>
       </SLightbox>
     );
